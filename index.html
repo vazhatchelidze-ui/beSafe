@@ -1,49 +1,220 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Hydrant Check</title>
-</head>
-<body style="
-  margin:0;
-  background:#0b0f14;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
-  font-family:-apple-system, system-ui, Arial;
-">
-  <div style="text-align:center;">
-  <h1>Hydrant Check 🔥🚗</h1>
-  <p style="font-size:18px; opacity:0.8;">
-    Check if parking is safe near a hydrant
-  </p>
 
-  <button onclick="checkParking()" 
-    style="
-      margin-top:20px;
-      padding:15px 25px;
-      font-size:18px;
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.12);
+      --text:#e9eef6;
+      --muted: rgba(233,238,246,0.72);
+      --good:#00e676;
+      --bad:#ff5252;
+      --warn:#ffd60a;
+      --btn:#1e90ff;
+      --shadow: rgba(0,0,0,0.55);
+      --radius:16px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:-apple-system, system-ui, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 50% 0%, rgba(30,144,255,0.18), transparent 60%),
+                  radial-gradient(900px 600px at 20% 10%, rgba(255,214,10,0.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px 14px;
+    }
+
+    .card{
+      width:min(520px, 100%);
+      background: var(--panel);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .title{
+      font-size:40px;
+      font-weight:800;
+      letter-spacing:0.2px;
+      margin: 6px 0 6px;
+      line-height:1.05;
+    }
+
+    .sub{
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size:16px;
+      line-height:1.35;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin: 14px 0 6px;
+    }
+
+    button{
+      appearance:none;
       border:none;
-      border-radius:10px;
-      background:#1e90ff;
-      color:white;
       cursor:pointer;
-    ">
-    Check Parking
-  </button>
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size:18px;
+      font-weight:700;
+      color:white;
+      background: var(--btn);
+      box-shadow: 0 10px 30px rgba(30,144,255,0.30);
+    }
 
-  <p id="result" style="margin-top:25px; font-size:20px;"></p>
-</div>
+    button:active{
+      transform: translateY(1px);
+    }
 
-<script>
-function checkParking() {
-  const safe = Math.random() > 0.5;
-  document.getElementById("result").innerText =
-    safe ? "✅ Parking looks SAFE" : "❌ Too close to hydrant!";
-}
-</script>
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    .result{
+      margin-top: 16px;
+      padding: 14px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      box-shadow: 0 12px 30px var(--shadow);
+      font-size:18px;
+      font-weight:800;
+      min-height: 56px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .result.good{ color: var(--good); }
+    .result.bad{ color: var(--bad); }
+    .result.warn{ color: var(--warn); }
+
+    .small{
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(233,238,246,0.60);
+      line-height:1.35;
+      text-align:center;
+    }
+
+    hr{
+      border:0;
+      height:1px;
+      background: rgba(255,255,255,0.10);
+      margin: 14px 0;
+    }
+
+    .inputs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+
+    input{
+      flex:1;
+      min-width: 160px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .ghost{
+      background: rgba(255,255,255,0.08);
+      box-shadow:none;
+      font-size:14px;
+      padding: 12px 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="chip">🚒 NYC Parking Demo • Hydrant Safety Check</div>
+    <div class="title">Hydrant Check 🔥🚗</div>
+    <p class="sub">Enter a hydrant distance (demo). This prototype shows SAFE/NOT SAFE with clear colors.</p>
+
+    <div class="inputs">
+      <input id="distanceFt" type="number" inputmode="numeric" placeholder="Distance from hydrant (feet) e.g. 10" />
+      <button class="ghost" onclick="useExample()">Use example</button>
+    </div>
+
+    <div class="row">
+      <button onclick="checkParking()">Check Parking</button>
+      <div class="chip">Rule (demo): <b style="color:#fff;">≤ 15 ft</b> = NOT SAFE</div>
+    </div>
+
+    <div id="result" class="result warn">Tap “Check Parking”</div>
+
+    <hr />
+
+    <div class="small">
+      ⚠️ Demo only: real app will use camera + location + city rules. <br/>
+      Next step: add “911 / tow / ticket info” buttons + history.
+    </div>
+  </div>
+
+  <script>
+    function useExample(){
+      document.getElementById("distanceFt").value = 10;
+      document.getElementById("result").textContent = "Tap “Check Parking”";
+      document.getElementById("result").className = "result warn";
+    }
+
+    function checkParking() {
+      const input = document.getElementById("distanceFt").value;
+      const result = document.getElementById("result");
+
+      if (!input) {
+        result.textContent = "⚠️ Please enter distance in feet (e.g. 10)";
+        result.className = "result warn";
+        return;
+      }
+
+      const ft = Number(input);
+
+      // Demo rule: within 15 ft of a hydrant is NOT SAFE
+      if (ft <= 15) {
+        result.textContent = "❌ NOT SAFE — too close to hydrant (" + ft + " ft)";
+        result.className = "result bad";
+      } else {
+        result.textContent = "✅ SAFE — looks ok (" + ft + " ft)";
+        result.className = "result good";
+      }
+    }
+  </script>
 </body>
 </html>
