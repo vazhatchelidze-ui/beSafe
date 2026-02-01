@@ -37,7 +37,7 @@
     }
 
     .card{
-      width:min(520px, 100%);
+      width:min(560px, 100%);
       background: var(--panel);
       border:1px solid var(--border);
       border-radius: var(--radius);
@@ -55,7 +55,7 @@
     }
 
     .sub{
-      margin: 0 0 16px;
+      margin: 0 0 12px;
       color: var(--muted);
       font-size:16px;
       line-height:1.35;
@@ -66,7 +66,7 @@
       gap:10px;
       flex-wrap:wrap;
       align-items:center;
-      margin: 14px 0 6px;
+      margin: 12px 0 6px;
     }
 
     button{
@@ -75,15 +75,24 @@
       cursor:pointer;
       border-radius: 14px;
       padding: 14px 18px;
-      font-size:18px;
-      font-weight:700;
+      font-size:16px;
+      font-weight:800;
       color:white;
       background: var(--btn);
       box-shadow: 0 10px 30px rgba(30,144,255,0.30);
     }
 
-    button:active{
-      transform: translateY(1px);
+    button:active{ transform: translateY(1px); }
+
+    .ghost{
+      background: rgba(255,255,255,0.10);
+      box-shadow:none;
+      font-weight:700;
+    }
+
+    .danger{
+      background: rgba(255,82,82,0.90);
+      box-shadow:none;
     }
 
     .chip{
@@ -99,32 +108,23 @@
     }
 
     .result{
-      margin-top: 16px;
+      margin-top: 12px;
       padding: 14px 14px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(0,0,0,0.22);
       box-shadow: 0 12px 30px var(--shadow);
       font-size:18px;
-      font-weight:800;
+      font-weight:900;
       min-height: 56px;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
     }
-
     .result.good{ color: var(--good); }
     .result.bad{ color: var(--bad); }
     .result.warn{ color: var(--warn); }
-
-    .small{
-      margin-top:10px;
-      font-size:12px;
-      color: rgba(233,238,246,0.60);
-      line-height:1.35;
-      text-align:center;
-    }
 
     hr{
       border:0;
@@ -152,20 +152,56 @@
       outline:none;
     }
 
-    .ghost{
-      background: rgba(255,255,255,0.08);
-      box-shadow:none;
-      font-size:14px;
-      padding: 12px 14px;
+    .cameraBox{
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      overflow:hidden;
+      background: rgba(0,0,0,0.30);
+    }
+
+    video, canvas{
+      width:100%;
+      height:auto;
+      display:block;
+    }
+
+    .small{
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(233,238,246,0.60);
+      line-height:1.35;
+      text-align:center;
     }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <div class="chip">🚒 NYC Parking Demo • Hydrant Safety Check</div>
+    <div class="chip">🚒 NYC Parking Demo • Camera Preview</div>
     <div class="title">Hydrant Check 🔥🚗</div>
-    <p class="sub">Enter a hydrant distance (demo). This prototype shows SAFE/NOT SAFE with clear colors.</p>
+    <p class="sub">
+      Camera can open on GitHub Pages (HTTPS). This is preview + capture only (no AI detection yet).
+    </p>
+
+    <!-- CAMERA CONTROLS -->
+    <div class="row">
+      <button onclick="startCamera()">Open Camera</button>
+      <button class="ghost" onclick="capturePhoto()">Capture</button>
+      <button class="danger" onclick="stopCamera()">Stop</button>
+    </div>
+
+    <div class="cameraBox">
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="photo" style="display:none;"></canvas>
+    </div>
+
+    <div id="cameraStatus" class="result warn">Camera is OFF</div>
+
+    <hr />
+
+    <!-- DEMO RULE SECTION -->
+    <div class="chip">Rule (demo): <b style="color:#fff;">≤ 15 ft</b> = NOT SAFE</div>
 
     <div class="inputs">
       <input id="distanceFt" type="number" inputmode="numeric" placeholder="Distance from hydrant (feet) e.g. 10" />
@@ -174,20 +210,103 @@
 
     <div class="row">
       <button onclick="checkParking()">Check Parking</button>
-      <div class="chip">Rule (demo): <b style="color:#fff;">≤ 15 ft</b> = NOT SAFE</div>
     </div>
 
     <div id="result" class="result warn">Tap “Check Parking”</div>
 
-    <hr />
-
     <div class="small">
-      ⚠️ Demo only: real app will use camera + location + city rules. <br/>
-      Next step: add “911 / tow / ticket info” buttons + history.
+      Next step (later): use camera + ML to detect hydrant + measure distance. For now: preview & capture works.
     </div>
   </div>
 
   <script>
+    let stream = null;
+
+    async function startCamera(){
+      const status = document.getElementById("cameraStatus");
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("photo");
+
+      try{
+        // If already on, do nothing
+        if (stream) {
+          status.textContent = "✅ Camera already ON";
+          status.className = "result good";
+          return;
+        }
+
+        // Request camera (prefer back camera on phones)
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+
+        video.srcObject = stream;
+
+        // Hide old photo if any
+        canvas.style.display = "none";
+        video.style.display = "block";
+
+        status.textContent = "✅ Camera is ON (preview running)";
+        status.className = "result good";
+      } catch(e){
+        status.textContent = "❌ Camera error: Permission denied or not supported";
+        status.className = "result bad";
+      }
+    }
+
+    function stopCamera(){
+      const status = document.getElementById("cameraStatus");
+      const video = document.getElementById("video");
+
+      if (!stream){
+        status.textContent = "Camera is already OFF";
+        status.className = "result warn";
+        return;
+      }
+
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      video.srcObject = null;
+
+      status.textContent = "Camera is OFF";
+      status.className = "result warn";
+    }
+
+    function capturePhoto(){
+      const status = document.getElementById("cameraStatus");
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("photo");
+
+      if (!stream){
+        status.textContent = "⚠️ Open camera first, then Capture";
+        status.className = "result warn";
+        return;
+      }
+
+      // Draw current frame to canvas
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+
+      if (!w || !h){
+        status.textContent = "⚠️ Wait 1 second for camera to load, then Capture";
+        status.className = "result warn";
+        return;
+      }
+
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, w, h);
+
+      // Show captured image instead of live preview (optional)
+      video.style.display = "none";
+      canvas.style.display = "block";
+
+      status.textContent = "📸 Captured! (This is a still image)";
+      status.className = "result good";
+    }
+
     function useExample(){
       document.getElementById("distanceFt").value = 10;
       document.getElementById("result").textContent = "Tap “Check Parking”";
