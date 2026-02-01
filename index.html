@@ -15,6 +15,35 @@
   height:100vh;
   font-family:-apple-system, system-ui, Arial;
 ">
-  <h1>Hydrant Check is LIVE 🚗🅿️</h1>
+  <div style="text-align:center;">
+  <h1>Hydrant Check 🔥🚗</h1>
+  <p style="font-size:18px; opacity:0.8;">
+    Check if parking is safe near a hydrant
+  </p>
+
+  <button onclick="checkParking()" 
+    style="
+      margin-top:20px;
+      padding:15px 25px;
+      font-size:18px;
+      border:none;
+      border-radius:10px;
+      background:#1e90ff;
+      color:white;
+      cursor:pointer;
+    ">
+    Check Parking
+  </button>
+
+  <p id="result" style="margin-top:25px; font-size:20px;"></p>
+</div>
+
+<script>
+function checkParking() {
+  const safe = Math.random() > 0.5;
+  document.getElementById("result").innerText =
+    safe ? "✅ Parking looks SAFE" : "❌ Too close to hydrant!";
+}
+</script>
 </body>
 </html>
