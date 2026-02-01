@@ -2,338 +2,404 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Hydrant Check</title>
 
   <style>
     :root{
       --bg:#0b0f14;
-      --panel: rgba(255,255,255,0.06);
-      --border: rgba(255,255,255,0.12);
-      --text:#e9eef6;
-      --muted: rgba(233,238,246,0.72);
-      --good:#00e676;
-      --bad:#ff5252;
-      --warn:#ffd60a;
-      --btn:#1e90ff;
-      --shadow: rgba(0,0,0,0.55);
-      --radius:16px;
+      --card:#121a22;
+      --muted:#9fb0c0;
+      --text:#eaf2ff;
+      --blue:#1e90ff;
+      --red:#ef4444;
+      --green:#22c55e;
+      --shadow: 0 18px 50px rgba(0,0,0,.55);
+      --radius:18px;
     }
-
-    *{ box-sizing:border-box; }
-
+    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:-apple-system, system-ui, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 800px at 50% 0%, rgba(30,144,255,0.18), transparent 60%),
-                  radial-gradient(900px 600px at 20% 10%, rgba(255,214,10,0.12), transparent 55%),
-                  var(--bg);
-      color:var(--text);
       min-height:100vh;
       display:flex;
-      align-items:center;
       justify-content:center;
-      padding: 18px 14px;
+      align-items:flex-start;
+      padding:20px 14px 40px;
+      background: radial-gradient(1200px 700px at 40% 0%, rgba(30,144,255,.18), transparent 60%),
+                  radial-gradient(900px 600px at 70% 40%, rgba(239,68,68,.16), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      font-family:-apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif;
     }
-
+    .wrap{width:min(480px, 100%);}
     .card{
-      width:min(560px, 100%);
-      background: var(--panel);
-      border:1px solid var(--border);
+      background: rgba(18,26,34,.88);
+      border: 1px solid rgba(255,255,255,.08);
       border-radius: var(--radius);
-      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
-      padding: 18px;
-      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      padding:16px;
+      backdrop-filter: blur(8px);
     }
-
-    .title{
+    .badge{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;
+      padding:6px 10px;
+      margin-bottom:10px;
+    }
+    h1{
+      margin:6px 0 4px;
       font-size:40px;
-      font-weight:800;
-      letter-spacing:0.2px;
-      margin: 6px 0 6px;
       line-height:1.05;
+      letter-spacing:-.02em;
     }
-
     .sub{
-      margin: 0 0 12px;
+      margin:0 0 14px;
       color: var(--muted);
-      font-size:16px;
-      line-height:1.35;
+      font-size:15px;
+      line-height:1.4;
     }
 
-    .row{
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 12px;}
+    button{
+      border:0;
+      border-radius:14px;
+      padding:14px 14px;
+      font-size:16px;
+      font-weight:650;
+      cursor:pointer;
+      color:white;
+      background:#2a3440;
+      transition: transform .06s ease, filter .12s ease, opacity .12s ease;
+      user-select:none;
+    }
+    button:active{transform: scale(.98);}
+    button.primary{background: var(--blue);}
+    button.danger{background: var(--red);}
+    button.ghost{
+      background: transparent;
+      border:1px solid rgba(255,255,255,.14);
+      color: var(--text);
+    }
+    button:disabled{opacity:.55; cursor:not-allowed;}
+
+    .mediaGrid{display:grid; gap:10px;}
+    .mediaBox{
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      background: rgba(0,0,0,.20);
+      position:relative;
+      min-height:220px;
+    }
+    /* Camera wrapper + overlays */
+    #camWrap, #photoWrap{
+      position:relative;
+      width:100%;
+      height:100%;
+      min-height:220px;
+    }
+    video, img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      min-height:220px;
+    }
+    .overlay{
+      position:absolute;
+      inset:0;
+      border-radius:16px;
+      border: 6px solid transparent;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      pointer-events:none;
+      transition: 0.18s ease;
+    }
+
+    .status{
+      margin-top:10px;
+      border-radius:14px;
+      padding:12px 12px;
+      text-align:center;
+      font-weight:700;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+    }
+    .status.off{color:#fbbf24;}
+    .status.ok{color: var(--green);}
+    .status.bad{color: var(--red);}
+
+    .rule{
+      margin-top:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      background: rgba(0,0,0,.14);
+      font-size:14px;
+    }
+
+    .inputRow{
       display:flex;
       gap:10px;
+      margin-top:12px;
       flex-wrap:wrap;
-      align-items:center;
-      margin: 12px 0 6px;
     }
-
-    button{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      border-radius: 14px;
-      padding: 14px 18px;
+    input{
+      flex:1;
+      min-width:200px;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
       font-size:16px;
-      font-weight:800;
-      color:white;
-      background: var(--btn);
-      box-shadow: 0 10px 30px rgba(30,144,255,0.30);
+      outline:none;
     }
-
-    button:active{ transform: translateY(1px); }
-
-    .ghost{
-      background: rgba(255,255,255,0.10);
-      box-shadow:none;
-      font-weight:700;
-    }
-
-    .danger{
-      background: rgba(255,82,82,0.90);
-      box-shadow:none;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: var(--muted);
-      font-size:13px;
+    .hint{
+      margin-top:8px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      line-height:1.35;
     }
 
     .result{
-      margin-top: 12px;
-      padding: 14px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.22);
-      box-shadow: 0 12px 30px var(--shadow);
-      font-size:18px;
-      font-weight:900;
-      min-height: 56px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-    }
-    .result.good{ color: var(--good); }
-    .result.bad{ color: var(--bad); }
-    .result.warn{ color: var(--warn); }
-
-    hr{
-      border:0;
-      height:1px;
-      background: rgba(255,255,255,0.10);
-      margin: 14px 0;
-    }
-
-    .inputs{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
-    }
-
-    input{
-      flex:1;
-      min-width: 160px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 12px 12px;
-      font-size:14px;
-      outline:none;
-    }
-
-    .cameraBox{
-      margin-top: 10px;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      overflow:hidden;
-      background: rgba(0,0,0,0.30);
-    }
-
-    video, canvas{
-      width:100%;
-      height:auto;
-      display:block;
-    }
-
-    .small{
-      margin-top:10px;
-      font-size:12px;
-      color: rgba(233,238,246,0.60);
+      margin-top:12px;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      font-size:16px;
       line-height:1.35;
-      text-align:center;
     }
+    .result strong{font-weight:800}
+    a{color:#93c5fd}
   </style>
 </head>
 
 <body>
-  <div class="card">
-    <div class="chip">🚒 NYC Parking Demo • Camera Preview</div>
-    <div class="title">Hydrant Check 🔥🚗</div>
-    <p class="sub">
-      Camera can open on GitHub Pages (HTTPS). This is preview + capture only (no AI detection yet).
-    </p>
+  <div class="wrap">
+    <div class="card">
+      <div class="badge">🚒 NYC Parking Demo • Camera Preview</div>
 
-    <!-- CAMERA CONTROLS -->
-    <div class="row">
-      <button onclick="startCamera()">Open Camera</button>
-      <button class="ghost" onclick="capturePhoto()">Capture</button>
-      <button class="danger" onclick="stopCamera()">Stop</button>
-    </div>
+      <h1>Hydrant Check 🔥🚗</h1>
+      <p class="sub">
+        Camera can open on GitHub Pages (HTTPS). This is preview + capture only (no AI detection yet).
+      </p>
 
-    <div class="cameraBox">
-      <video id="video" playsinline autoplay muted></video>
-      <canvas id="photo" style="display:none;"></canvas>
-    </div>
+      <div class="btnrow">
+        <button class="primary" id="btnOpen">Open Camera</button>
+        <button id="btnCapture" disabled>Capture</button>
+        <button class="danger" id="btnStop" disabled>Stop</button>
+      </div>
 
-    <div id="cameraStatus" class="result warn">Camera is OFF</div>
+      <div class="mediaGrid">
+        <!-- CAMERA -->
+        <div class="mediaBox">
+          <div id="camWrap">
+            <video id="video" autoplay playsinline muted></video>
+            <div id="overlayCam" class="overlay"></div>
+          </div>
+        </div>
 
-    <hr />
+        <div class="status off" id="camStatus">Camera is OFF</div>
 
-    <!-- DEMO RULE SECTION -->
-    <div class="chip">Rule (demo): <b style="color:#fff;">≤ 15 ft</b> = NOT SAFE</div>
+        <!-- CAPTURED PHOTO -->
+        <div class="mediaBox" style="min-height:180px;">
+          <div id="photoWrap">
+            <img id="photo" alt="Captured frame will appear here" />
+            <div id="overlayPhoto" class="overlay"></div>
+          </div>
+        </div>
 
-    <div class="inputs">
-      <input id="distanceFt" type="number" inputmode="numeric" placeholder="Distance from hydrant (feet) e.g. 10" />
-      <button class="ghost" onclick="useExample()">Use example</button>
-    </div>
+        <div class="rule">
+          <span>Rule (demo): <strong>≤ 15 ft</strong> = NOT SAFE</span>
+          <span id="ruleExplain">Hydrant distance</span>
+        </div>
 
-    <div class="row">
-      <button onclick="checkParking()">Check Parking</button>
-    </div>
+        <div class="inputRow">
+          <input id="dist" inputmode="decimal" placeholder="Distance from hydrant (feet)" />
+          <button class="ghost" id="btnExample">Use example</button>
+        </div>
 
-    <div id="result" class="result warn">Tap “Check Parking”</div>
+        <button class="primary" id="btnCheck" style="margin-top:10px;">Check Parking</button>
 
-    <div class="small">
-      Next step (later): use camera + ML to detect hydrant + measure distance. For now: preview & capture works.
+        <div class="result" id="result">
+          Enter distance in feet, then tap <strong>Check Parking</strong>.
+        </div>
+
+        <div class="hint">
+          Tip: GitHub Pages URL looks like: <code>https://YOURNAME.github.io/REPO/</code><br/>
+          If camera doesn’t open, check iPhone Safari permissions (Settings → Safari → Camera) and use HTTPS.
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
+    // ========= Helpers =========
+    const $ = (id) => document.getElementById(id);
+
+    const btnOpen = $("btnOpen");
+    const btnCapture = $("btnCapture");
+    const btnStop = $("btnStop");
+    const btnCheck = $("btnCheck");
+    const btnExample = $("btnExample");
+
+    const video = $("video");
+    const photo = $("photo");
+    const distInput = $("dist");
+
+    const camStatus = $("camStatus");
+    const result = $("result");
+
+    const overlayCam = $("overlayCam");
+    const overlayPhoto = $("overlayPhoto");
+
     let stream = null;
 
-    async function startCamera(){
-      const status = document.getElementById("cameraStatus");
-      const video = document.getElementById("video");
-      const canvas = document.getElementById("photo");
+    function setOverlay(el, state){
+      // state: "safe" | "danger" | "off"
+      if (!el) return;
+      if (state === "safe"){
+        el.style.borderColor = "#22c55e";
+        el.style.boxShadow = "0 0 28px rgba(34,197,94,.45)";
+      } else if (state === "danger"){
+        el.style.borderColor = "#ef4444";
+        el.style.boxShadow = "0 0 28px rgba(239,68,68,.45)";
+      } else {
+        el.style.borderColor = "transparent";
+        el.style.boxShadow = "0 0 0 transparent";
+      }
+    }
+
+    function setCamState(on){
+      if (on){
+        camStatus.textContent = "Camera is ON";
+        camStatus.className = "status ok";
+      } else {
+        camStatus.textContent = "Camera is OFF";
+        camStatus.className = "status off";
+      }
+    }
+
+    function showResult(isSafe, feet){
+      if (isSafe){
+        result.innerHTML = `✅ <strong>SAFE</strong> — ${feet} ft away (demo rule).`;
+        setOverlay(overlayCam, "safe");
+        setOverlay(overlayPhoto, "safe");
+      } else {
+        result.innerHTML = `❌ <strong>NOT SAFE</strong> — ${feet} ft is too close to a hydrant (≤ 15 ft).`;
+        setOverlay(overlayCam, "danger");
+        setOverlay(overlayPhoto, "danger");
+      }
+    }
+
+    function parseFeet(){
+      const raw = (distInput.value || "").trim().replace(",", ".");
+      const n = Number(raw);
+      if (!Number.isFinite(n) || n < 0) return null;
+      return n;
+    }
+
+    // ========= Camera =========
+    async function openCamera(){
+      // reset overlays
+      setOverlay(overlayCam, "off");
 
       try{
-        // If already on, do nothing
-        if (stream) {
-          status.textContent = "✅ Camera already ON";
-          status.className = "result good";
-          return;
-        }
-
-        // Request camera (prefer back camera on phones)
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
           audio: false
         });
-
         video.srcObject = stream;
+        await video.play();
 
-        // Hide old photo if any
-        canvas.style.display = "none";
-        video.style.display = "block";
+        setCamState(true);
+        btnOpen.disabled = true;
+        btnStop.disabled = false;
+        btnCapture.disabled = false;
 
-        status.textContent = "✅ Camera is ON (preview running)";
-        status.className = "result good";
-      } catch(e){
-        status.textContent = "❌ Camera error: Permission denied or not supported";
-        status.className = "result bad";
+      } catch(err){
+        console.error(err);
+        setCamState(false);
+        result.innerHTML = `⚠️ <strong>Camera error</strong>: ${err?.message || err}`;
       }
     }
 
     function stopCamera(){
-      const status = document.getElementById("cameraStatus");
-      const video = document.getElementById("video");
-
-      if (!stream){
-        status.textContent = "Camera is already OFF";
-        status.className = "result warn";
-        return;
+      if (stream){
+        stream.getTracks().forEach(t => t.stop());
       }
-
-      stream.getTracks().forEach(t => t.stop());
       stream = null;
       video.srcObject = null;
 
-      status.textContent = "Camera is OFF";
-      status.className = "result warn";
+      setCamState(false);
+      btnOpen.disabled = false;
+      btnStop.disabled = true;
+      btnCapture.disabled = true;
+
+      setOverlay(overlayCam, "off");
     }
 
-    function capturePhoto(){
-      const status = document.getElementById("cameraStatus");
-      const video = document.getElementById("video");
-      const canvas = document.getElementById("photo");
-
-      if (!stream){
-        status.textContent = "⚠️ Open camera first, then Capture";
-        status.className = "result warn";
+    function captureFrame(){
+      if (!video || video.readyState < 2){
+        result.innerHTML = "⚠️ Camera not ready yet. Try again.";
         return;
       }
 
-      // Draw current frame to canvas
-      const w = video.videoWidth;
-      const h = video.videoHeight;
-
-      if (!w || !h){
-        status.textContent = "⚠️ Wait 1 second for camera to load, then Capture";
-        status.className = "result warn";
-        return;
-      }
-
+      const canvas = document.createElement("canvas");
+      const w = video.videoWidth || 1280;
+      const h = video.videoHeight || 720;
       canvas.width = w;
       canvas.height = h;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, w, h);
 
-      // Show captured image instead of live preview (optional)
-      video.style.display = "none";
-      canvas.style.display = "block";
-
-      status.textContent = "📸 Captured! (This is a still image)";
-      status.className = "result good";
+      // put into <img>
+      photo.src = canvas.toDataURL("image/jpeg", 0.9);
+      result.innerHTML = "📸 Captured. Now enter distance (feet) and tap <strong>Check Parking</strong>.";
     }
 
-    function useExample(){
-      document.getElementById("distanceFt").value = 10;
-      document.getElementById("result").textContent = "Tap “Check Parking”";
-      document.getElementById("result").className = "result warn";
-    }
-
-    function checkParking() {
-      const input = document.getElementById("distanceFt").value;
-      const result = document.getElementById("result");
-
-      if (!input) {
-        result.textContent = "⚠️ Please enter distance in feet (e.g. 10)";
-        result.className = "result warn";
+    // ========= Check logic (demo) =========
+    function checkParking(){
+      const feet = parseFeet();
+      if (feet === null){
+        result.innerHTML = "⚠️ Please enter a valid number in feet (example: 18).";
+        setOverlay(overlayCam, "off");
+        setOverlay(overlayPhoto, "off");
         return;
       }
-
-      const ft = Number(input);
-
-      // Demo rule: within 15 ft of a hydrant is NOT SAFE
-      if (ft <= 15) {
-        result.textContent = "❌ NOT SAFE — too close to hydrant (" + ft + " ft)";
-        result.className = "result bad";
-      } else {
-        result.textContent = "✅ SAFE — looks ok (" + ft + " ft)";
-        result.className = "result good";
-      }
+      const isSafe = feet > 15;
+      showResult(isSafe, feet);
     }
+
+    // ========= Events =========
+    btnOpen.addEventListener("click", openCamera);
+    btnStop.addEventListener("click", stopCamera);
+    btnCapture.addEventListener("click", captureFrame);
+    btnCheck.addEventListener("click", checkParking);
+
+    btnExample.addEventListener("click", () => {
+      distInput.value = "12";
+      checkParking();
+    });
+
+    // start state
+    setCamState(false);
+    setOverlay(overlayCam, "off");
+    setOverlay(overlayPhoto, "off");
+
+    // If user leaves page, stop camera
+    window.addEventListener("pagehide", stopCamera);
   </script>
 </body>
 </html>
